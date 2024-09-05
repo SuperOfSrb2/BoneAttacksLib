@@ -58,10 +58,6 @@ function BoneAttack:init(x, y, width, height, ending, destroy, xspeed, yspeed, r
     self.stspeed    = stspeed    or 1
     --self.stwait     = stwait     or 0
 
-    self.mask = MaskFX(function()
-        love.graphics.rectangle("fill", Game.battle.arena.left, Game.battle.arena.top, Game.battle.arena.width, Game.battle.arena.height)
-    end)
-    self:addFX(self.mask)
 end
 
 
