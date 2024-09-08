@@ -1,6 +1,6 @@
 local BoneAttack, super = Class(Bullet)
 
-function BoneAttack:init(x, y, width, height, ending, destroy, xspeed, yspeed, rot, stretching, stheight1, stheight2, stspeed, stwait)
+function BoneAttack:init(x, y, width, height, ending, destroy, xspeed, yspeed, rot, stretching, stheight1, stheight2, stspeed, sttimes, stdir, stwait)
     --Width and Height are for the inner bone
     --Ending is the bone ending sprite used
     --Destroy is destroy_on_hit
@@ -8,7 +8,9 @@ function BoneAttack:init(x, y, width, height, ending, destroy, xspeed, yspeed, r
     --Stheight1 is the height the bone will begin to shift down at
     --Stheight2 is the height the bone will begin to shift up at
     --Stspeed is the speed the bone shifts
-    --(NOT CURRENTLY IMPLEMENTED) Stwait is the time the bone will pause before changing direction at stheight
+    --Sttimes is the number of times the bone will shift (every time it hits an stheight)
+    --Stdir is the starting direction of shifting
+    --Stwait is the time the bone will pause before changing direction at stheight
 
     self.sprite = Sprite(ending or "battle/bullets/sansboneending")
     self.sprite2 = Sprite(ending or "battle/bullets/sansboneending")
@@ -26,7 +28,7 @@ function BoneAttack:init(x, y, width, height, ending, destroy, xspeed, yspeed, r
     
     self:addChild(self.sprite)
     self.boneend2 = self:addChild(self.sprite2)
-    self.boneend2.y = self.boneend2.y - (self.rheight - self.sprite2.height)
+    self.boneend2y = self.boneend2.y
     self.boneend2.rotation = math.rad(180)
     self.boneend2.x = self.boneend2.x + self.sprite2.width
     
@@ -53,10 +55,12 @@ function BoneAttack:init(x, y, width, height, ending, destroy, xspeed, yspeed, r
     end
     
     self.stretching = stretching or false
-    self.stheight1  = stheight1  or height
-    self.stheight2  = stheight2  or self.sprite.height + 1
+    self.stheight1  = stheight1  or (self.rheight + 1)
+    self.stheight2  = stheight2  or self.sprite.height
     self.stspeed    = stspeed    or 1
-    --self.stwait     = stwait     or 0
+    self.sttimes    = sttimes    or 99999999999 --(alot)
+    self.stdir      = stdir      or -1
+    self.stwait     = stwait     or 0
 
 end
 
@@ -67,42 +71,52 @@ function BoneAttack:update()
     self.y = self.y + (self.yspeed or 0)
     
     if self.stretching == true then
-        if stdir == nil then
-            stdir = -1
+        if self.prestop == 1 then
+            self.prestop = 0
+        end
+        if self.sttimes == 0 then
+            do return end
+        end
+        if self.cwait and self.cwait > 0 then
+            self.cwait = self.cwait - 1
+            do return end
+        end
+        if (self.rheight + self.stdir*self.stspeed) > self.stheight1 then
+            self.sttimes = self.sttimes - 1
+            self.stdir = -1
+            self.cwait = self.stwait
+            self.rheight = self.stheight1
+            self.prestop = 1
+        end
+        if (self.rheight + self.stdir*self.stspeed) < self.stheight2 then
+            self.sttimes = self.sttimes - 1
+            self.stdir = 1
+            self.cwait = self.stwait
+            self.rheight = self.stheight2
+            self.prestop = 1
         end
         if self.rheight > self.stheight1 then
-            stdir = -1
+            self.sttimes = self.sttimes - 1
+            self.stdir = -1
+            self.cwait = self.stwait
         end
         if self.rheight < self.stheight2 then
-            stdir = 1
+            self.sttimes = self.sttimes - 1
+            self.stdir = 1
+            self.cwait = self.stwait
         end
-        self.rheight = self.rheight + stdir*self.stspeed
-        self.boneend2.y = self.boneend2.y - stdir*self.stspeed
-        --buffer = buffer - 1
+        if self.prestop ~= 1 then
+            self.rheight = self.rheight + self.stdir*self.stspeed
+            self.boneend2.y = self.boneend2.y - self.stdir*self.stspeed
+        end
     end
-
-    --Future Update Stwait; spaghetti code
-        --if buffer > 0 then
-        --else
-        --  waittime = self.stwait
-        --end
-        --if waittime == nil then
-        --  waittime = 0
-        --end
-        --if buffer == nil then
-        --    buffer = 0
-        --end
-
-        --if waittime > 0 then
-        --    waittime = waittime - 1
-        --    buffer = 2
-        --else
 
     local xo = self.sprite.width/4 + 1
     if (self.sprite.width % 2 == 0) then
         xo = self.sprite.width/4
     end
-    
+
+    self.boneend2.y = self.boneend2y - (self.rheight - self.sprite2.height)    
 
     self:setHitbox(xo, -(self.rheight - (self.sprite.height/2)), self.rwidth - 1, self.rheight + 1)
 end
