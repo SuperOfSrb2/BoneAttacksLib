@@ -7,9 +7,10 @@ function BoneAttack:init(x, y, width, height, ending, destroy, xspeed, yspeed, r
     --Stretching is whether or not the bone is shifting vertically
     --Stheight1 is the height the bone will begin to shift down at
     --Stheight2 is the height the bone will begin to shift up at
-    --Sttimes is the number of times the bone will shift (every time it hits an stheight)
     --Stspeed is the speed the bone shifts
-    --(NOT CURRENTLY IMPLEMENTED) Stwait is the time the bone will pause before changing direction at stheight
+    --Sttimes is the number of times the bone will shift (every time it hits an stheight)
+    --Stdir is the starting direction of shifting
+    --Stwait is the time the bone will pause before changing direction at stheight
 
     self.sprite = Sprite(ending or "battle/bullets/sansboneending")
     self.sprite2 = Sprite(ending or "battle/bullets/sansboneending")
@@ -27,7 +28,7 @@ function BoneAttack:init(x, y, width, height, ending, destroy, xspeed, yspeed, r
     
     self:addChild(self.sprite)
     self.boneend2 = self:addChild(self.sprite2)
-    self.boneend2y = self.boneend2.y-- - (self.rheight - self.sprite2.height)
+    self.boneend2y = self.boneend2.y
     self.boneend2.rotation = math.rad(180)
     self.boneend2.x = self.boneend2.x + self.sprite2.width
     
